@@ -156,8 +156,11 @@ public class Evaluator {
 		SumExpression sumExpression = new SumExpression();
 		compute(regex, sumExpression);
 		
-		answer = Double.parseDouble(expression);
-		return answer;
+		try {
+			return Double.parseDouble(expression);
+		} catch (NumberFormatException nfe) {
+			throw new ExpressionParseException("Invalid Expression \"" + expression + "\"", nfe);
+		}
 	}
 	
 	/**

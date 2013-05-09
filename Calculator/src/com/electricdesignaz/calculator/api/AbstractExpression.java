@@ -88,6 +88,8 @@ public abstract class AbstractExpression implements Expression {
 	}*/
 	
 	/**
+	 * Can be called without a given operator index and the getOperator() method will be called to get the operator index
+	 * 
 	 * @see #getOperands(int)
 	 */
 	protected double[] getOperands() throws NumberFormatException, ExpressionParseException {
