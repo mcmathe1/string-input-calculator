@@ -4,6 +4,10 @@ public abstract class AbstractExpression implements Expression {
 	
 	protected String expression;
 	
+	protected AbstractExpression() {
+		expression = "";
+	}
+	
 	protected AbstractExpression(String expression) {
 		this.expression = expression;
 	}

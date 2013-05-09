@@ -143,35 +143,38 @@ public class Evaluator {
 		
 		// Compute exponentials
 		regex = "(\\d+\\.?\\d*\\^-?[^" + operatorCharacterClass + "]+)";
-		Matcher exponentialMatcher = Pattern.compile(regex).matcher(expression);
-		while (exponentialMatcher.find()) {
-			Expression exponentialExpression = new ExponentialExpression(exponentialMatcher.group());
-			double result = exponentialExpression.eval();
-			replaceEvaluation(exponentialMatcher.start(), exponentialMatcher.end(), result);
-			exponentialMatcher = Pattern.compile(regex).matcher(expression);
-		}
+		ExponentialExpression exponentialExpression = new ExponentialExpression();
+		compute(regex, exponentialExpression);
 
 		// Compute products and quotients
 		regex = "(\\d+\\.?\\d*[/\\*]-?\\d+\\.?\\d*)";
-		Matcher productMatcher = Pattern.compile(regex).matcher(expression);
-		while (productMatcher.find()) {
-			Expression productExpression = new ProductExpression(productMatcher.group());
-			double product = productExpression.eval();
-			replaceEvaluation(productMatcher.start(), productMatcher.end(), product);
-			productMatcher = Pattern.compile(regex).matcher(expression);
-		}
+		ProductExpression productExpression = new ProductExpression();
+		compute(regex, productExpression);
 		
 		// Compute sums and differences
 		regex = "^(-?\\d+\\.?\\d*[+\\-]-?\\d+\\.?\\d*)";
-		Matcher sumMatcher = Pattern.compile(regex).matcher(expression);
-		while (sumMatcher.find()) {
-			Expression sumExpr = new SumExpression(sumMatcher.group());
-			double sum = sumExpr.eval();
-			replaceEvaluation(sumMatcher.start(), sumMatcher.end(), sum);
-			sumMatcher = Pattern.compile(regex).matcher(expression);
-		}
+		SumExpression sumExpression = new SumExpression();
+		compute(regex, sumExpression);
 		
 		answer = Double.parseDouble(expression);
 		return answer;
+	}
+	
+	/**
+	 * Computes the type of arithmetic expressions it is passed
+	 * 
+	 * @param regex - the regular expression for picking out individual operations of the operation type
+	 * @param expressionType - Should be an object of the expression type that is to be computed (ie. subclass of AbstractExpression)
+	 * 
+	 * @throws ExpressionParseException
+	 */
+	private <T extends AbstractExpression> void compute(String regex, T expressionType) throws ExpressionParseException {
+		Matcher matcher = Pattern.compile(regex).matcher(expression);
+		while (matcher.find()) {
+			expressionType.setExpression(matcher.group());
+			double result = expressionType.eval();
+			replaceEvaluation(matcher.start(), matcher.end(), result);
+			matcher = Pattern.compile(regex).matcher(expression);
+		}
 	}
 }

@@ -2,6 +2,10 @@ package com.electricdesignaz.calculator.api;
 
 public class ExponentialExpression extends AbstractExpression {
 	
+	protected ExponentialExpression() {
+		super();
+	}
+	
 	public ExponentialExpression(String expression) {
 		super(expression);
 	}

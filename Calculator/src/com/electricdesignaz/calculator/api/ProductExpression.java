@@ -2,6 +2,10 @@ package com.electricdesignaz.calculator.api;
 
 public class ProductExpression extends AbstractExpression {
 	
+	protected ProductExpression() {
+		super();
+	}
+	
 	public ProductExpression(String expression) throws ExpressionParseException {
 		super(expression);
 		if (!isSimpleTwoTermExpression()) {
@@ -12,6 +16,10 @@ public class ProductExpression extends AbstractExpression {
 	@Override
 	public double eval() throws ExpressionParseException {
 		double answer = 0.0;
+		
+		if (!isSimpleTwoTermExpression()) {
+			throw new ExpressionParseException("Too many terms");
+		}
 
 		try {
 			double[] operands = getOperands();
