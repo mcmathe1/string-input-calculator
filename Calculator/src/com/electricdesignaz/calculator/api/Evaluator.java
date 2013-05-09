@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author mcmathe1
  * 
@@ -13,6 +15,8 @@ import java.util.regex.Pattern;
  * to evaluate the expression given by the user and handle any errors.  
  */
 public class Evaluator {
+	
+	private static final Logger logger = Logger.getLogger(Evaluator.class); 
 	
 	protected static final String operatorCharacterClass = "+\\-\\*/\\^";
 	
@@ -145,11 +149,11 @@ public class Evaluator {
 	 * @param evaluation - double to replace the substring
 	 */
 	protected void replaceEvaluation(int startPosition, int endPosition, double evaluation) {
-		System.out.println("start position: " + startPosition + ", end position: " + endPosition);
+		logger.trace("start position: " + startPosition + ", end position: " + endPosition);
 		StringBuilder sb = new StringBuilder(expression);
 		
 		sb.replace(startPosition, endPosition, String.valueOf(evaluation));
-		System.out.println(sb.toString());
+		logger.trace(sb.toString());
 		setExpression(sb.toString(), true);
 	}
 	
@@ -164,7 +168,7 @@ public class Evaluator {
 		Map<Integer, Integer> parenIndices = getParenIndices();
 		for (int firstParen : parenIndices.keySet()) {
 			String parenEnclosedExpr = expression.substring(firstParen + 1, parenIndices.get(firstParen));
-			System.out.println("Expression: " + expression + "; Expression piece: " + parenEnclosedExpr);
+			logger.trace("Expression: " + expression + "; Expression piece: " + parenEnclosedExpr);
 			Evaluator parenEvaluator = new Evaluator(parenEnclosedExpr, true);
 			double evaluation = parenEvaluator.evaluate();
 			replaceEvaluation(firstParen, parenIndices.get(firstParen) + 1, evaluation);
@@ -188,6 +192,7 @@ public class Evaluator {
 		try {
 			return Double.parseDouble(expression);
 		} catch (NumberFormatException nfe) {
+			logger.error("Error parsing expression as double: \"" + expression + "\"");
 			throw new ExpressionParseException("Invalid Expression \"" + expression + "\"", nfe);
 		}
 	}

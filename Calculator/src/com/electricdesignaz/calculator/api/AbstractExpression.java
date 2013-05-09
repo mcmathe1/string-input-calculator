@@ -1,6 +1,10 @@
 package com.electricdesignaz.calculator.api;
 
+import org.apache.log4j.Logger;
+
 public abstract class AbstractExpression implements Expression {
+	
+	private static final Logger logger = Logger.getLogger(AbstractExpression.class);
 	
 	protected String expression;
 	
@@ -47,46 +51,6 @@ public abstract class AbstractExpression implements Expression {
 		return (character == '*' || character == '/' || character == '+' || character == '-' || character == '^');
 	}
 	
-	/*protected void format() {
-		setExpression(expression.trim()
-						.toLowerCase()
-						.replaceAll("\\s+", "")
-						.replaceAll("[\\[{]", "\\(")
-						.replaceAll("[\\]}]", "\\)"));
-		
-		// Replace ')(' and '\d(' with ')*(' and '\d*(' to more easily show multiplication
-		StringBuilder sb = new StringBuilder(expression);
-		String regex = "[^" + operatorCharacterClass + "\\(]\\(";
-		Matcher matcher = Pattern.compile(regex).matcher(expression);
-		while (matcher.find()) {
-			sb.insert(matcher.end() - 1, "*");
-			matcher = Pattern.compile(regex).matcher(sb.toString());
-		}
-		setExpression(sb.toString());
-		
-		regex = "\\)[^" + operatorCharacterClass + "\\)]";
-		matcher = Pattern.compile(regex).matcher(expression);
-		while(matcher.find()) {
-			sb.insert(matcher.start() + 1, "*");
-			matcher = Pattern.compile(regex).matcher(sb.toString());
-		}
-		setExpression(sb.toString());
-		
-		// Figure out the implied multiplication by adjacency with functions
-		formatFunctions();
-		setExpression(expression.replace("pi", "(" + String.valueOf(Math.PI) + ")")
-							.replace("e", "(" + String.valueOf(Math.E) + ")"));
-	}
-	
-	protected void formatFunctions() {
-		String formattingExpr = expression.toLowerCase();
-		Function[] functions = Function.values();
-		for (Function f : functions) {
-			formattingExpr = formattingExpr.replace(f.toString().toLowerCase(), f.toString());
-		}
-		setExpression(formattingExpr);
-	}*/
-	
 	/**
 	 * Can be called without a given operator index and the getOperator() method will be called to get the operator index
 	 * 
@@ -117,6 +81,7 @@ public abstract class AbstractExpression implements Expression {
 			operands[1] = new Evaluator(expression.substring(operatorIndex + 1), true).evaluate();
 			
 		} else {
+			logger.error("Expression is not a two term expression: \"" + expression + "\"");
 			throw new ExpressionParseException("Expression \"" + expression + "\" contains more than two operands");
 		}
 		
@@ -139,104 +104,8 @@ public abstract class AbstractExpression implements Expression {
 				return i;
 			}
 		}
+		
+		logger.error("No operators found in expression: \"" + expression + "\"");
 		throw new ExpressionParseException("No operators in expression");
 	}
-	/*
-		double answer = 0.0;
-
-		Map<Expression, Integer> parentheticExprs = null;
-		try {
-			parentheticExprs = getParentheticalExpressions();
-		} catch (ExpressionParseException e) {
-			System.err.println(e.getMessage());
-		}
-		
-		for (Expression expr : parentheticExprs.keySet()) {
-			System.out.println("Expression: " + expression + "; Expression piece: " + expr.expression);
-			int startPosition = parentheticExprs.get(expr);
-			int endPosition = startPosition + expr.expression.length();
-			double evaluation = expr.eval();
-			replaceEvaluation(startPosition, endPosition, evaluation);
-		}
-		setExpression(expression.replaceAll("[()]", ""));
-		
-		// Compute products and quotients
-		String regex = "(\\d+\\.?\\d*[/\\*]-?\\d+\\.?\\d*)";
-		Matcher productMatcher = Pattern.compile(regex).matcher(expression);
-		while (productMatcher.find()) {
-			Expression productExpression = new Expression(productMatcher.group(), true);
-			double product = productExpression.multiply();
-			replaceEvaluation(productMatcher.start(), productMatcher.end(), product);
-			productMatcher = Pattern.compile(regex).matcher(expression);
-		}
-		
-		// Compute sums and differences
-		regex = "^(-?\\d+\\.?\\d*[+-]-?\\d+\\.?\\d*)";
-		Matcher sumMatcher = Pattern.compile(regex).matcher(expression);
-		while (sumMatcher.find()) {
-			Expression sumExpr = new Expression(sumMatcher.group(), true);
-			double sum = sumExpr.sum();
-			replaceEvaluation(sumMatcher.start(), sumMatcher.end(), sum);
-			sumMatcher = Pattern.compile(regex).matcher(expression);
-		}
-		
-		answer = Double.parseDouble(expression);
-		return answer;
-	}*/
-	
-	/*public double sum() throws ExpressionParseException {
-		double firstTerm = 0.0;
-		double lastTerm = 0.0;
-		double answer = 0.0;
-		
-		try {
-			for (int i = 1; i < expression.length(); i++) {
-				if (expression.charAt(i) == '+') {
-					double[] operands = getOperands(i);
-					firstTerm = operands[0];
-					lastTerm = operands[1];
-					answer = firstTerm + lastTerm;
-					break;
-				} else if (expression.charAt(i) == '-') {
-					double[] operands = getOperands(i);
-					firstTerm = operands[0];
-					lastTerm = operands[1];
-					answer = firstTerm - lastTerm;
-					break;
-				}
-			}
-		} catch (NumberFormatException nfe) {
-			throw new ExpressionParseException("Invalid Expression", nfe);
-		}
-		
-		return answer;
-	}
-	
-	public double multiply() throws ExpressionParseException {
-		double firstTerm = 0.0;
-		double lastTerm = 0.0;
-		double answer = 0.0;
-		
-		try {
-			for (int i = 1; i < expression.length(); i++) {
-				if (expression.charAt(i) == '*') {
-					double[] operands = getOperands(i);
-					firstTerm = operands[0];
-					lastTerm = operands[1];
-					answer = firstTerm * lastTerm;
-					break;
-				} else if (expression.charAt(i) == '/') {
-					double[] operands = getOperands(i);
-					firstTerm = operands[0];
-					lastTerm = operands[1];
-					answer = firstTerm / lastTerm;
-					break;
-				}
-			}
-		} catch (NumberFormatException nfe) {
-			throw new ExpressionParseException("Invalid Expression", nfe);
-		}
-		
-		return answer;
-	}*/
 }
