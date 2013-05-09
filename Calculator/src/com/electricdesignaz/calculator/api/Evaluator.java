@@ -5,16 +5,33 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author mcmathe1
+ * 
+ * This class is the only main one utilized by the Calculator class and the UI.  It's main function is to
+ * take in the string given by the user, and pick it apart by order of operations.  It uses the Expression classes
+ * to evaluate the expression given by the user and handle any errors.  
+ */
 public class Evaluator {
 	
 	protected static final String operatorCharacterClass = "+\\-\\*/\\^";
 	
 	protected String expression;
 	
+	/**
+	 * Public constructor that expects an unformatted expression string
+	 * 
+	 * @param expression - Expression to be formatted and evaluated.
+	 */
 	public Evaluator(String expression) {
 		this(expression, false);
 	}
 	
+	/**
+	 * @param expression - Expression to be evaluated.
+	 * @param formatted - Whether or not the given expression has been formatted.
+	 * 				If it has, passing true saves time.
+	 */
 	protected Evaluator(String expression, boolean formatted) {
 		this.expression = expression;
 		if (!formatted) {
@@ -22,10 +39,21 @@ public class Evaluator {
 		}
 	}
 	
+	/**
+	 * Formats and sets the expression string
+	 * 
+	 * @param expression
+	 */
 	public void setExpression(String expression) {
 		setExpression(expression, false);
 	}
 	
+	/**
+	 * Sets expression string and formats it the boolean <b>formatted</b> is false
+	 * 
+	 * @param expression
+	 * @param formatted
+	 */
 	protected void setExpression(String expression, boolean formatted) {
 		this.expression = expression;
 		if (!formatted) {
@@ -33,6 +61,10 @@ public class Evaluator {
 		}
 	}
 	
+	/**
+	 * Performs string manipulations on the expression string to make it ready to be evaluated by the Evaluator.
+	 * Invoked automatically by the public constructor and setExpression() method.
+	 */
 	protected void format() {
 		setExpression(expression.trim()
 				.toLowerCase()
@@ -58,27 +90,25 @@ public class Evaluator {
 		}
 		setExpression(sb.toString(), true);
 		
-		// Figure out the implied multiplication by adjacency with functions
+		// TODO Figure out the implied multiplication by adjacency with functions
 		
-		formatFunctions();
-		setExpression(expression.replace("pi", "(" + String.valueOf(Math.PI) + ")")
-				.replace("e", "(" + String.valueOf(Math.E) + ")"), true);
-	}
-	
-	protected void formatFunctions() {
+		// format function
 		String formattingExpr = expression.toLowerCase();
 		Function[] functions = Function.values();
 		for (Function f : functions) {
-			formattingExpr = formattingExpr.replace(f.toString().toLowerCase(), f.toString());
+			formattingExpr = formattingExpr.replace(f.toString().toLowerCase(), f.toString().toUpperCase());
 		}
 		setExpression(formattingExpr, true);
+		
+		setExpression(expression.replace("pi", "(" + String.valueOf(Math.PI) + ")")
+				.replace("e", "(" + String.valueOf(Math.E) + ")"), true);
 	}
 	
 	/**
 	 * Takes the expression and looks through it to find every where parentheses are used to enclose a section of an expression
 	 * that should be evaluated first. 
 	 * 
-	 * @return Map containing the indices of matching paren pairs
+	 * @return Map<Integer, Integer> containing the indices of matching paren pairs
 	 * @throws ExpressionParseException
 	 */
 	private Map<Integer, Integer> getParenIndices() throws ExpressionParseException {
@@ -124,7 +154,6 @@ public class Evaluator {
 	}
 	
 	public double evaluate() throws ExpressionParseException {
-		double answer = 0.0;
 		String regex = null;
 		
 		// If the expression can be parsed as a double, it is a number and the rest of the method can be skipped
