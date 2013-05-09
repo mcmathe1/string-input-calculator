@@ -16,8 +16,27 @@ public abstract class AbstractExpression implements Expression {
 		return expression.matches("-?\\d+\\.?\\d*");
 	}
 	
-	protected boolean isTwoTermExpression() {
-		return expression.matches("^-?\\d+\\.?\\d*[+\\*\\-/^]-?\\d+\\.?\\d*");
+	/**
+	 * A complex two term expression includes a number followed by an operator, then a function involving a number (eg. sin(3.14))
+	 * A simple two term expression will also return true
+	 * 
+	 * NOTE: complex is not intended to mean of or relating to imaginary (complex) numbers
+	 * 
+	 * @return true if the expression is a 2 term expression
+	 * 			false if it is not
+	 */
+	protected boolean isComplexTwoTermExpression() {
+		return expression.matches("^-?\\d+\\.?\\d*[" + Evaluator.operatorCharacterClass + "]-?[^" + Evaluator.operatorCharacterClass + "]+");
+	}
+	
+	/**
+	 * A simple two term expression consists of a number followed by a operator followed by another number
+	 * 
+	 * @return true if the expression is a simple 2 term expression
+	 * 			false if it is not
+	 */
+	protected boolean isSimpleTwoTermExpression() {
+		return expression.matches("^-?\\d+\\.?\\d*[" + Evaluator.operatorCharacterClass + "]-?\\d+\\.?\\d*");
 	}
 	
 	protected static boolean isOperator(char character) {
@@ -81,12 +100,19 @@ public abstract class AbstractExpression implements Expression {
 	 * @throws ExpressionParseException if there are more than two operands
 	 */
 	protected double[] getOperands(int operatorIndex) throws NumberFormatException, ExpressionParseException {
-		if (!isTwoTermExpression()) throw new ExpressionParseException("More than two operands");
-		
 		double[] operands = new double[2];
-		
+
 		operands[0] = Double.parseDouble(expression.substring(0, operatorIndex));
-		operands[1] = Double.parseDouble(expression.substring(operatorIndex + 1));
+		
+		if (isSimpleTwoTermExpression()) {
+			operands[1] = Double.parseDouble(expression.substring(operatorIndex + 1));
+			
+		} else if (isComplexTwoTermExpression()) {
+			operands[1] = new Evaluator(expression.substring(operatorIndex + 1), true).evaluate();
+			
+		} else {
+			throw new ExpressionParseException("Expression \"" + expression + "\" contains more than two operands");
+		}
 		
 		return operands;
 	}
@@ -96,10 +122,11 @@ public abstract class AbstractExpression implements Expression {
 	 * unless it is a negative sign for an operand  
 	 * 
 	 * @return the index of the operator
-	 * @throws ExpressionParseException if no operators are found in the expression
+	 * @throws ExpressionParseException if no operators are found in the expression or 
+	 * 			the expression isn't a two term expression
 	 */
 	protected int getOperatorIndex() throws ExpressionParseException {
-		if (!isTwoTermExpression()) throw new ExpressionParseException("Expression contains more than 1 operator");
+		if (!isComplexTwoTermExpression()) throw new ExpressionParseException("Expression \"" + expression + "\" contains more than 1 operator");
 		
 		for (int i = 1; i < expression.length(); i++) {
 			if (isOperator(expression.charAt(i))) {

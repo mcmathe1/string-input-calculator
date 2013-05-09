@@ -4,7 +4,7 @@ public class ProductExpression extends AbstractExpression {
 	
 	public ProductExpression(String expression) throws ExpressionParseException {
 		super(expression);
-		if (!isTwoTermExpression()) {
+		if (!isSimpleTwoTermExpression()) {
 			throw new ExpressionParseException("Too many terms");
 		}
 	}
@@ -21,7 +21,7 @@ public class ProductExpression extends AbstractExpression {
 				answer = operands[0] / operands[1];
 			}
 		} catch (NumberFormatException nfe) {
-			throw new ExpressionParseException("Invalid Expression", nfe);
+			throw new ExpressionParseException("Invalid Expression: \"" + expression + "\"", nfe);
 		}
 		
 		return answer;

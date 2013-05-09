@@ -106,9 +106,18 @@ public class Evaluator {
 		return parenPairs;
 	}
 	
+	/**
+	 * Replaces an piece of the string expression with a given evaluation (DOES NOT EVALUATE)
+	 * This is simply a string replacement method
+	 * 
+	 * @param startPosition - first index to be replaced (included)
+	 * @param endPosition - index after last to be replaced (parameter index is excluded from replacement)
+	 * @param evaluation - double to replace the substring
+	 */
 	protected void replaceEvaluation(int startPosition, int endPosition, double evaluation) {
 		System.out.println("start position: " + startPosition + ", end position: " + endPosition);
 		StringBuilder sb = new StringBuilder(expression);
+		
 		sb.replace(startPosition, endPosition, String.valueOf(evaluation));
 		System.out.println(sb.toString());
 		setExpression(sb.toString(), true);
@@ -118,6 +127,11 @@ public class Evaluator {
 		double answer = 0.0;
 		String regex = null;
 		
+		// If the expression can be parsed as a double, it is a number and the rest of the method can be skipped
+		try {
+			return Double.parseDouble(expression);
+		} catch (NumberFormatException ignore) {}
+		
 		Map<Integer, Integer> parenIndices = getParenIndices();
 		for (int firstParen : parenIndices.keySet()) {
 			String parenEnclosedExpr = expression.substring(firstParen + 1, parenIndices.get(firstParen));
@@ -125,6 +139,16 @@ public class Evaluator {
 			Evaluator parenEvaluator = new Evaluator(parenEnclosedExpr, true);
 			double evaluation = parenEvaluator.evaluate();
 			replaceEvaluation(firstParen, parenIndices.get(firstParen) + 1, evaluation);
+		}
+		
+		// Compute exponentials
+		regex = "(\\d+\\.?\\d*\\^-?[^" + operatorCharacterClass + "]+)";
+		Matcher exponentialMatcher = Pattern.compile(regex).matcher(expression);
+		while (exponentialMatcher.find()) {
+			Expression exponentialExpression = new ExponentialExpression(exponentialMatcher.group());
+			double result = exponentialExpression.eval();
+			replaceEvaluation(exponentialMatcher.start(), exponentialMatcher.end(), result);
+			exponentialMatcher = Pattern.compile(regex).matcher(expression);
 		}
 
 		// Compute products and quotients
