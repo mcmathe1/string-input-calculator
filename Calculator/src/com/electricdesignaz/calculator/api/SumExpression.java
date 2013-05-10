@@ -10,7 +10,7 @@ public class SumExpression extends AbstractExpression {
 		super();
 	}
 	
-	public SumExpression(String expression) throws ExpressionParseException {
+	protected SumExpression(String expression) throws ExpressionParseException {
 		super(expression);
 		if (!isSimpleTwoTermExpression()) {
 			logger.error("Expression is not a simple two term expression: \"" + expression + "\"");

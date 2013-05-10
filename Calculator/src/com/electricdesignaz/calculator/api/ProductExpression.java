@@ -10,7 +10,7 @@ public class ProductExpression extends AbstractExpression {
 		super();
 	}
 	
-	public ProductExpression(String expression) throws ExpressionParseException {
+	protected ProductExpression(String expression) throws ExpressionParseException {
 		super(expression);
 		if (!isSimpleTwoTermExpression()) {
 			logger.error("Expression is not a simple two term expression: \"" + expression + "\"");

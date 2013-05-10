@@ -10,7 +10,7 @@ public class ExponentialExpression extends AbstractExpression {
 		super();
 	}
 	
-	public ExponentialExpression(String expression) {
+	protected ExponentialExpression(String expression) {
 		super(expression);
 	}
 	
