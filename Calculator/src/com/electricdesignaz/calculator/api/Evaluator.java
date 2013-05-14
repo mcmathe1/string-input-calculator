@@ -19,6 +19,7 @@ public class Evaluator {
 	private static final Logger logger = Logger.getLogger(Evaluator.class); 
 	
 	protected static final String operatorCharacterClass = "+\\-\\*/\\^";
+	protected static final String numberCharacterClass = "\\d+\\.\\d*";
 	
 	protected String expression;
 	
@@ -76,9 +77,17 @@ public class Evaluator {
 				.replaceAll("[\\[{]", "\\(")
 				.replaceAll("[\\]}]", "\\)"), true);
 		
+		// format functions
+		String formattingExpr = expression.toLowerCase();
+		Function[] functions = Function.values();
+		for (Function f : functions) {
+			formattingExpr = formattingExpr.replace(f.toString().toLowerCase(), f.toString().toUpperCase());
+		}
+		setExpression(formattingExpr, true);
+		
 		// Replace ')(' and '\d(' with ')*(' and '\d*(' to more easily show multiplication
 		StringBuilder sb = new StringBuilder(expression);
-		String regex = "[^" + operatorCharacterClass + "\\(]\\(";
+		String regex = "[^A-Z" + operatorCharacterClass + "\\(]\\(";
 		Matcher matcher = Pattern.compile(regex).matcher(expression);
 		while (matcher.find()) {
 			sb.insert(matcher.end() - 1, "*");
@@ -94,18 +103,11 @@ public class Evaluator {
 		}
 		setExpression(sb.toString(), true);
 		
-		// TODO Figure out the implied multiplication by adjacency with functions
-		
-		// format function
-		String formattingExpr = expression.toLowerCase();
-		Function[] functions = Function.values();
-		for (Function f : functions) {
-			formattingExpr = formattingExpr.replace(f.toString().toLowerCase(), f.toString().toUpperCase());
-		}
-		setExpression(formattingExpr, true);
-		
 		setExpression(expression.replace("pi", "(" + String.valueOf(Math.PI) + ")")
 				.replace("e", "(" + String.valueOf(Math.E) + ")"), true);
+		
+		// TODO Figure out the implied multiplication by adjacency with functions
+		
 	}
 	
 	/**
@@ -178,11 +180,13 @@ public class Evaluator {
 		regex = "(\\d+\\.?\\d*\\^-?[^" + operatorCharacterClass + "]+)";
 		ExponentialExpression exponentialExpression = new ExponentialExpression();
 		compute(regex, exponentialExpression);
+		resolveSigns();
 
 		// Compute products and quotients
 		regex = "(\\d+\\.?\\d*[/\\*]-?\\d+\\.?\\d*)";
 		ProductExpression productExpression = new ProductExpression();
 		compute(regex, productExpression);
+		resolveSigns();
 		
 		// Compute sums and differences
 		regex = "^(-?\\d+\\.?\\d*[+\\-]-?\\d+\\.?\\d*)";
@@ -212,6 +216,21 @@ public class Evaluator {
 			double result = expressionType.eval();
 			replaceEvaluation(matcher.start(), matcher.end(), result);
 			matcher = Pattern.compile(regex).matcher(expression);
+		}
+	}
+	
+	/**
+	 * Fixes plus and minus sign conflicts in expression
+	 * eg. changes 1--1 to 1+1, 1+-1 to 1-1 and 1++++1 to 1+1
+	 */
+	private void resolveSigns() {
+		while (expression.contains("++") || expression.contains("--") || expression.contains("+-") || expression.contains("-+")) {
+			setExpression(expression
+					.replaceAll("\\-\\-", "+")
+					.replaceAll("\\++", "+")
+					.replaceAll("\\-\\+", "-")
+					.replaceAll("\\+\\-", "-")
+					, true);
 		}
 	}
 }
