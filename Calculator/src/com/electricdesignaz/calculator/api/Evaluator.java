@@ -19,7 +19,7 @@ public class Evaluator {
 	private static final Logger logger = Logger.getLogger(Evaluator.class); 
 	
 	protected static final String operatorCharacterClass = "+\\-\\*/\\^";
-	protected static final String numberCharacterClass = "\\d+\\.\\d*";
+	protected static final String numberCharacterClass = "\\d+\\.?\\d*";
 	
 	protected String expression;
 	
@@ -85,6 +85,9 @@ public class Evaluator {
 		}
 		setExpression(formattingExpr, true);
 		
+		setExpression(expression.replace("pi", "(" + String.valueOf(Math.PI) + ")")
+				.replace("e", "(" + String.valueOf(Math.E) + ")"), true);
+		
 		// Replace ')(' and '\d(' with ')*(' and '\d*(' to more easily show multiplication
 		StringBuilder sb = new StringBuilder(expression);
 		String regex = "[^A-Z" + operatorCharacterClass + "\\(]\\(";
@@ -102,12 +105,6 @@ public class Evaluator {
 			matcher = Pattern.compile(regex).matcher(sb.toString());
 		}
 		setExpression(sb.toString(), true);
-		
-		setExpression(expression.replace("pi", "(" + String.valueOf(Math.PI) + ")")
-				.replace("e", "(" + String.valueOf(Math.E) + ")"), true);
-		
-		// TODO Figure out the implied multiplication by adjacency with functions
-		
 	}
 	
 	/**
@@ -177,19 +174,27 @@ public class Evaluator {
 		}
 		
 		// Compute exponentials
-		regex = "(\\d+\\.?\\d*\\^-?[^" + operatorCharacterClass + "]+)";
+		regex = "(" + numberCharacterClass + "\\^-?[^" + operatorCharacterClass + "]+)";
 		ExponentialExpression exponentialExpression = new ExponentialExpression();
 		compute(regex, exponentialExpression);
 		resolveSigns();
+		
+		// Compute functions
+		FunctionExpression functionExpression = new FunctionExpression();
+		for (Function f : Function.values()) {
+			regex = "(" + f.toString() + "[^" + operatorCharacterClass + "]+)";
+			compute(regex, functionExpression);
+			resolveSigns();
+		}
 
 		// Compute products and quotients
-		regex = "(\\d+\\.?\\d*[/\\*]-?\\d+\\.?\\d*)";
+		regex = "(" + numberCharacterClass + "[/\\*]-?" + numberCharacterClass + ")";
 		ProductExpression productExpression = new ProductExpression();
 		compute(regex, productExpression);
 		resolveSigns();
 		
 		// Compute sums and differences
-		regex = "^(-?\\d+\\.?\\d*[+\\-]-?\\d+\\.?\\d*)";
+		regex = "^(-?" + numberCharacterClass + "[+\\-]-?" + numberCharacterClass + ")";
 		SumExpression sumExpression = new SumExpression();
 		compute(regex, sumExpression);
 		

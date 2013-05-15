@@ -1,9 +1,8 @@
 package com.electricdesignaz.calculator.api;
 
 public enum Function {
-	ARCSIN, ARCCOS, ARCTAN,
-	ARCSEC, ARCCSC, ARCCOT,
-	SIN, COS, TAN,
+	ARCCOS, ARCSIN, ARCTAN,
+	COS, SIN, TAN,
 	SEC, CSC, COT,
 	LN, LOG,
 	SQRT;

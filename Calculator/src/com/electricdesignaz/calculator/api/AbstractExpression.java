@@ -21,7 +21,7 @@ public abstract class AbstractExpression implements Expression {
 	}
 	
 	protected boolean isNumber() {
-		return expression.matches("-?\\d+\\.?\\d*");
+		return expression.matches("-?" + Evaluator.numberCharacterClass);
 	}
 	
 	/**
@@ -34,7 +34,7 @@ public abstract class AbstractExpression implements Expression {
 	 * 			false if it is not
 	 */
 	protected boolean isComplexTwoTermExpression() {
-		return expression.matches("^-?\\d+\\.?\\d*[" + Evaluator.operatorCharacterClass + "]-?[^" + Evaluator.operatorCharacterClass + "]+");
+		return expression.matches("^-?" + Evaluator.numberCharacterClass + "[" + Evaluator.operatorCharacterClass + "]-?[^" + Evaluator.operatorCharacterClass + "]+");
 	}
 	
 	/**
@@ -44,7 +44,7 @@ public abstract class AbstractExpression implements Expression {
 	 * 			false if it is not
 	 */
 	protected boolean isSimpleTwoTermExpression() {
-		return expression.matches("^-?\\d+\\.?\\d*[" + Evaluator.operatorCharacterClass + "]-?\\d+\\.?\\d*");
+		return expression.matches("^-?" + Evaluator.numberCharacterClass + "[" + Evaluator.operatorCharacterClass + "]-?" + Evaluator.numberCharacterClass);
 	}
 	
 	protected static boolean isOperator(char character) {
@@ -62,7 +62,7 @@ public abstract class AbstractExpression implements Expression {
 	
 	/**
 	 * Gets the terms of an arithmetic expression in double form.  
-	 * NOTE: ASSUMES FORMAT OF '[operand][operator][operand]' WITH NO ADDITIONAL OPERATORS OR OPERANDS (aside from a possible negative sign)
+	 * NOTE: ASSUMES FORMAT OF '[operand][operator][operand (can be a function included. eg. sqrt(4))]' WITH NO ADDITIONAL OPERATORS OR OPERANDS (aside from a possible negative sign)
 	 * 
 	 * @param operatorIndex
 	 * @return an array containing the first and second terms of arithmetic expression, first operand being index 0, second operand being index 1;
