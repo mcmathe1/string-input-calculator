@@ -1,5 +1,6 @@
 package com.electricdesignaz.calculator.api;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -151,8 +152,14 @@ public class Evaluator {
 		logger.trace("start position: " + startPosition + ", end position: " + endPosition);
 		StringBuilder sb = new StringBuilder(expression);
 		
-		sb.replace(startPosition, endPosition, String.valueOf(evaluation));
+		// TODO handle scientific notation for all numbers (possible solution: make all numbers be expressed in it)
+		// Handle scientific notation: E[-15, infinity)
+		DecimalFormat df = new DecimalFormat("0.000000000000000");
+		logger.trace("Unformated: " + evaluation + "; Formated: " + df.format(evaluation));
+		
+		sb.replace(startPosition, endPosition, df.format(evaluation));
 		logger.trace(sb.toString());
+		
 		setExpression(sb.toString(), true);
 	}
 	
@@ -182,7 +189,7 @@ public class Evaluator {
 		// Compute functions
 		FunctionExpression functionExpression = new FunctionExpression();
 		for (Function f : Function.values()) {
-			regex = "(" + f.toString() + "[^" + operatorCharacterClass + "]+)";
+			regex = "(" + f.toString() + "-?[^" + operatorCharacterClass + "]+)";
 			compute(regex, functionExpression);
 			resolveSigns();
 		}
@@ -197,6 +204,8 @@ public class Evaluator {
 		regex = "^(-?" + numberCharacterClass + "[+\\-]-?" + numberCharacterClass + ")";
 		SumExpression sumExpression = new SumExpression();
 		compute(regex, sumExpression);
+		
+		// TODO Fix errors that arise from scientific notation
 		
 		try {
 			return Double.parseDouble(expression);

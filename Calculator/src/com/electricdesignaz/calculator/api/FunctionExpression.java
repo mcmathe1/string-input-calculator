@@ -17,7 +17,7 @@ public class FunctionExpression extends AbstractExpression {
 	
 	@Override
 	public double eval() throws ExpressionParseException {
-		
+		// TODO fix answers that are not quite exact (ie. tan(pi/2) ==> -2.xxxxxxxE25)
 		for (Function f : Function.values()) {
 			if (expression.startsWith(f.toString())) {
 				
