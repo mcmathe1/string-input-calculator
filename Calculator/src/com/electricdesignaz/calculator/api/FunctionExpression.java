@@ -2,7 +2,6 @@ package com.electricdesignaz.calculator.api;
 
 import org.apache.log4j.Logger;
 
-
 public class FunctionExpression extends AbstractExpression {
 	
 	private static final Logger logger = Logger.getLogger(FunctionExpression.class);

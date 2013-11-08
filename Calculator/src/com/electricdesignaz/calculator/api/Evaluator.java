@@ -1,8 +1,6 @@
 package com.electricdesignaz.calculator.api;
 
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,7 +113,7 @@ public class Evaluator {
 	 * @return Map<Integer, Integer> containing the indices of matching paren pairs
 	 * @throws ExpressionParseException
 	 */
-	private Map<Integer, Integer> getParenIndices() throws ExpressionParseException {
+	/*private Map<Integer, Integer> getParenIndicies() throws ExpressionParseException {
 		Map<Integer, Integer> parenPairs = new HashMap<Integer, Integer>();
 		
 		int tempIndex = 0;
@@ -138,6 +136,33 @@ public class Evaluator {
 		if (parenCounter != 0) throw new ExpressionParseException("Uneven number of parentheses");
 		
 		return parenPairs;
+	}*/
+	
+	private int[] getParenPairIndicies() throws ExpressionParseException {
+		int openParenIndex = -1;
+		int parenCounter = 0;
+		for (int i = 0; i < expression.length(); i++) {
+			if (expression.charAt(i) == '(') {
+				if (parenCounter == 0) {
+					openParenIndex = i;
+				}
+				parenCounter++;
+			} else if (expression.charAt(i) == ')') {
+				parenCounter--;
+				if (parenCounter == 0) {
+					int[] parenPair = new int[2];
+					parenPair[0] = openParenIndex;
+					parenPair[1] = i;
+					
+					return parenPair;
+				}
+			}
+		}
+		
+		if (openParenIndex == -1)
+			return new int[]{-1,-1};
+		else
+			throw new ExpressionParseException("Missing close parentheses");
 	}
 	
 	/**
@@ -171,13 +196,13 @@ public class Evaluator {
 			return Double.parseDouble(expression);
 		} catch (NumberFormatException ignore) {}
 		
-		Map<Integer, Integer> parenIndices = getParenIndices();
-		for (int firstParen : parenIndices.keySet()) {
-			String parenEnclosedExpr = expression.substring(firstParen + 1, parenIndices.get(firstParen));
+		int[] parenIndicies = new int[2];
+		while ((parenIndicies = getParenPairIndicies())[0] != -1) { // the paren index being -1 signifies no more parens
+			String parenEnclosedExpr = expression.substring(parenIndicies[0] + 1, parenIndicies[1]);
 			logger.trace("Expression: " + expression + "; Expression piece: " + parenEnclosedExpr);
 			Evaluator parenEvaluator = new Evaluator(parenEnclosedExpr, true);
 			double evaluation = parenEvaluator.evaluate();
-			replaceEvaluation(firstParen, parenIndices.get(firstParen) + 1, evaluation);
+			replaceEvaluation(parenIndicies[0], parenIndicies[1] + 1, evaluation);
 		}
 		
 		// Compute exponentials
@@ -206,6 +231,7 @@ public class Evaluator {
 		compute(regex, sumExpression);
 		
 		// TODO Fix errors that arise from scientific notation
+		// TODO Above problem fixed in sort.  There would be problems with decimals that are smaller than E-15
 		
 		try {
 			return Double.parseDouble(expression);
